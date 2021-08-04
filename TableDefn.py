@@ -1,9 +1,6 @@
-#!/usr/bin/python3
-#
-# table.py
-#
+
 # Definition for an ORM database table and its metaclass
-#
+
 
 import collections
 import orm
@@ -11,8 +8,6 @@ import datetime
 from orm.easydb import *
 from orm.field import Field, Integer, Float, String, Foreign, DateTime, Coordinate
 
-# metaclass of table
-# Implement me or change me. (e.g. use class decorator instead)
 class MetaTable(type):
     # class variable to keep track of repeating tables
     namesList = []
@@ -60,7 +55,6 @@ class MetaTable(type):
             if isinstance(val, Foreign):
                 values2, version2 = db.get(val.table.__name__, value)
                 if(key == 'location'):
-                    #hardcode
                     zipped = (values2[idx], values2[idx+1])
                     values2.pop(idx)
                     values2[idx] = zipped
@@ -202,7 +196,6 @@ class MetaTable(type):
 
 
 # table class
-# Implement me.
 class Table(object, metaclass=MetaTable):
     def __init__(self, db, **kwargs):
         #get the name of the child class --> table type of the instance  
