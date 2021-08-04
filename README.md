@@ -1,2 +1,2 @@
 # A Database Table Design
-Designing a Database Table and its metaclass
+Database Table contains all the data of the database. Desigined by applying MetaClass fundamentals on python. 
