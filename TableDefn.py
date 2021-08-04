@@ -1,13 +1,3 @@
-
-# Definition for an ORM database table and its metaclass
-
-
-import collections
-import orm
-import datetime
-from orm.easydb import *
-from orm.field import Field, Integer, Float, String, Foreign, DateTime, Coordinate
-
 class MetaTable(type):
     # class variable to keep track of repeating tables
     namesList = []
@@ -33,7 +23,7 @@ class MetaTable(type):
     # Returns an existing object from the table, if it exists.
     #   db: database object, the database to get the object from
     #   pk: int, primary key (ID)
-    def get(cls, db, pk):
+    def getobj(cls, db, pk):
         # get version and values from easydb 
         values, version = db.get(cls.__name__, pk)
         # attain the fields requiring user input 
@@ -82,7 +72,7 @@ class MetaTable(type):
     # returns all objects in the table.
     # db: database object, the database to get the object from
     # kwarg: the query argument for comparing
-    def filter(cls, db, **kwarg):
+    def filterobj(cls, db, **kwarg):
         foreign = False
         if(kwarg == {}):
             #return all rows
@@ -164,7 +154,7 @@ class MetaTable(type):
     # return the number of rows in the table.
     # db: database object, the database to get the object from
     # kwarg: the query argument for comparing
-    def count(cls, db, **kwarg):
+    def countobj(cls, db, **kwarg):
         if(kwarg == {}):
             result = db.scan(cls.__name__, 1)
             return len(result)
@@ -202,7 +192,8 @@ class Table(object, metaclass=MetaTable):
         self._db = db
         self.tb_name = self.__class__.__name__        
         self.version = None
-        self.pk = None  # ID (primary key)
+        # primary key (ID)
+        self.pk = None  
         self.temp = []
         
         #find out required attributes:
