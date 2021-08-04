@@ -1,12 +1,3 @@
-
-# Definition for setup and export function
-
-
-from .easydb import Database
-import inspect
-import orm
-
-
 def getTableNames(module_info):
     tb_names = []
     for name in module_info:
