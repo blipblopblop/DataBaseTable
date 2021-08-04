@@ -4,14 +4,8 @@ class MetaTable(type):
     table_info = []
     
     def __init__(cls, name, bases, attrs):
-        #print("--------Meta---------")
         # class variable to ClassName.namedefinedabove
-        # avoid repeating table names
-        if name in MetaTable.namesList:
-            raise AttributeError("table name is repeated")
-        MetaTable.namesList.append(name)
-        
-        # fields for the class
+       # fields for the class
         cls._fields = []
         for key, value in attrs.items():            
             if isinstance(value, Field):
@@ -58,8 +52,6 @@ class MetaTable(type):
                     kwargs2[key2] = value2
                 obj2 = val.table(db, **kwargs2)
                 kwargs[key] = obj2
-            else:
-                kwargs[key] = value
 
         # this will invoke Table.__init__(''' arguments ''') 
         # ** kwargs bc we pack the values
@@ -99,11 +91,6 @@ class MetaTable(type):
                     for i in unique_ids:
                         if(temp_ids.count(i) == 2):
                             row_ids.append(i)
-                else:
-                    if(key.title() in MetaTable.namesList):
-                        key = 'id'
-                        val = val.__dict__['pk']
-                    row_ids = db.scan(cls.__name__, 2, column_name=key, value = val)
             else:
                 column, op = key.split('__')
                 if(column.title() in MetaTable.namesList):
@@ -131,14 +118,6 @@ class MetaTable(type):
                         for i in unique_ids:
                             if(temp_ids.count(i) == 2):
                                 row_ids.append(i)
-                    else:
-                        row_ids = db.scan(cls.__name__, 5, column_name = column, value = val)
-                elif(op == 'lt'):
-                    #less than = 4
-                    dt_ex = datetime.datetime.now()
-                    if(type(val) == type(dt_ex)):
-                        val = str(val)
-                    row_ids = db.scan(cls.__name__, 4, column_name = column, value = val)
         objects = []
         for pk in row_ids:
             obj = cls.get(db, pk)
@@ -148,41 +127,6 @@ class MetaTable(type):
                 obj.__dict__['_'+foreign_key].__dict__['pk'] = pk
             objects.append(obj)
         return objects
-        
-
-    # Returns the number of matches given the query. If no argument is given, 
-    # return the number of rows in the table.
-    # db: database object, the database to get the object from
-    # kwarg: the query argument for comparing
-    def countobj(cls, db, **kwarg):
-        if(kwarg == {}):
-            result = db.scan(cls.__name__, 1)
-            return len(result)
-        key, val = zip(*kwarg.items())
-        key = key[0]
-        val = val[0]
-        if('_' not in key):
-            #eq = 2
-            if(key.title() in MetaTable.namesList):
-                key = 'id'
-                val = val.__dict__['pk']
-            row_ids = db.scan(cls.__name__, 2, column_name=key, value = val)
-        else:
-            column, op = key.split('__')
-            if(column not in cls.__dict__ and column != 'id'):
-                raise AttributeError('unknown field')
-            if(op == 'lt'):
-                #less than = 4
-                row_ids = db.scan(cls.__name__, 4, column_name=column, value = val)
-            elif(op == 'ne'):
-                #not equal = 3
-                row_ids = db.scan(cls.__name__, 3, column_name=column, value = val)
-            elif(op == 'gt'):
-                #greater than = 5
-                row_ids = db.scan(cls.__name__, 5, column_name=column, value = val)
-            else:
-                raise AttributeError('unknown operator')
-        return len(row_ids)
 
 
 # table class
@@ -239,31 +183,17 @@ class Table(object, metaclass=MetaTable):
                 parentObj = i
                 if parentObj.pk is None:
                     if(type(parentObj.insertArg[0]) == tuple):
-                        #hardcode
-                        temp = parentObj.insertArg.pop(0)
-                        parentObj.insertArg.insert(0, temp[1])
-                        parentObj.insertArg.insert(0, temp[0])
-                        #print("parentObj insertArg: ", parentObj.insertArg)
-                        #print("---parent tablename ",parentObj.tb_name)
-                    parentObj.pk, parentObj.version = parentObj._db.insert(parentObj.tb_name,  parentObj.insertArg) 
+                        parentObj.pk, parentObj.version = parentObj._db.insert(parentObj.tb_name,  parentObj.insertArg) 
                 values[0] = parentObj.pk
-                #print("SAVE values: ", values)
                 if self.version is None:
-                    #print("pk is ",self.pk)
                     self.pk, self.version = self._db.insert(self.tb_name,  values)
-                    #print("==pk after is ",self.pk)
-                    #print("==version after is ",self.version)
-                
-                if self.version is not None:
+                 if self.version is not None:
                     #print("version is ",self.version)
                     self.version = self._db.update(self.tb_name, self.pk, values, self.version)
                     #print("update values ", values)
         if self.version is None and self.pk is None:
             self.pk, self.version = self._db.insert(self.tb_name,  values)
-        elif self.version is not None and atomic is False:
-            self.version = self._db.update(self.tb_name, self.pk, values)
-        elif self.version is not None and atomic is not False:
-            self.version = self._db.update(self.tb_name, self.pk, values, self.version)
+
 
     # Delete the row from the database.
     def delete(self):
